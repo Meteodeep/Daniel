@@ -1,20 +1,13 @@
 //We need to finish construction of our project!
 
 #include <Servo.h>
-#include <SharpIR.h>
 
 Servo myservo;  // create servo object to control a servo
 // twelve servo objects can be created on most boards
 
-#define ir A0
-#define model 20150
-// ir: the pin where your sensor is attached
-// model: an int that determines your sensor:  1080 for GP2Y0A21Y
-//                                            20150 for GP2Y0A02Y
-//                                            (working distance range according to the datasheets)
-
-SharpIR sharp(ir, model);
-
+int inputPin = 3;               // choose the input pin (for PIR sensor)
+int pirState = LOW;             // we start, assuming no motion detected
+int val = 0;                    // variable for reading the pin status
 
 int pos = 0;    // variable to store the servo position
 int rled = 13;
@@ -27,6 +20,8 @@ void setup() {
 pinMode(rled, OUTPUT);
 pinMode(yled, OUTPUT);
 pinMode(gled, OUTPUT);
+myservo.attach(4);  // attaches the servo on pin 9 to the servo object
+pinMode(inputPin, INPUT);     // declare sensor as input
 }
 
 // put your setup code here, to run once:
@@ -44,18 +39,17 @@ void loop()
     delay(15);                       // waits 15ms for the servo to reach the position
   }
 
-  
-unsigned long pepe1=millis();  // takes the time before the loop on the library begins
+{  
 
-
-int dis=SharpIR.distance();  // this returns the distance to the object you're measuring
-
-Serial.print("Mean distance: ");  // returns it to the serial monitor
-Serial.println(dis);
-
-  
-if(dis>0<10)
-{digitalWrite(yled, HIGH); // turn the LED on (HIGH is the voltage level)
+  val = digitalRead(inputPin);  // read input value
+  if (val == HIGH) {            // check if the input is HIGH
+    if (pirState == LOW) {
+      // we have just turned on
+      Serial.println("Motion detected!");
+      // We only want to print on the output change, not state
+      pirState = HIGH;
+    
+digitalWrite(yled, HIGH); // turn the LED on (HIGH is the voltage level)
 delay(1000);
 // wait for a second
 digitalWrite(yled, LOW); // turn the LED off by making the voltage LOW
@@ -71,14 +65,20 @@ delay(1000);
 
     }
 
-else if(dis>11)
-{digitalWrite(gled, HIGH); // turn the LED on (HIGH is the voltage level)
-delay(4000);
-// wait for a second
-digitalWrite(gled, LOW); // turn the LED off by making the voltage LOW
-delay(1000);
-// wait for a second
+
+  } else {
+  if (pirState == HIGH){
+      // we have just turned of
+      Serial.println("Motion ended!");
+      // We only want to print on the output change, not state
+      pirState = LOW;
+      
+  digitalWrite(gled, HIGH); // turn the LED on (HIGH is the voltage level)
+  delay(1000);
+  // wait for a second
+  digitalWrite(gled, LOW); // turn the LED off by making the voltage LOW
+  delay(1000);
+  // wait for a second
       
     }
-
 
